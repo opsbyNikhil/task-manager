@@ -18,9 +18,9 @@ password = "admin@12345"
 
 if not User.objects.filter(username=username).exists():
     User.objects.create_superuser(
-        username=username,
+        username=Nikhil,
         email=email,
-        password=password
+        password=Nikhil@12345
     )
     print("Superuser created successfully.")
 else:
