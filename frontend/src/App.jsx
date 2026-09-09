@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
+
 import api from "./api";
+
 import Login from "./Login";
+import LoginOTP from "./LoginOTP";
+import Register from "./Register";
+import RegisterOTP from "./RegisterOTP";
+
 import "./App.css";
 
 function App() {
@@ -12,15 +18,95 @@ function App() {
     !!localStorage.getItem("access_token"),
   );
 
+  /*
+   * Authentication screen:
+   *
+   * login
+   * login-otp
+   * register
+   * register-otp
+   */
+  const [authScreen, setAuthScreen] = useState("login");
+
+  // Email being used during OTP verification
+  const [authEmail, setAuthEmail] = useState("");
+
+  // =========================
+  // LOGIN
+  // =========================
+
+  const handleLoginOTP = (email) => {
+    setAuthEmail(email);
+    setAuthScreen("login-otp");
+  };
+
+  // =========================
+  // LOGIN SUCCESS
+  // =========================
+
   const handleLogin = () => {
     setIsLoggedIn(true);
+    setAuthScreen("login");
+    setAuthEmail("");
   };
+
+  // =========================
+  // GO TO REGISTER
+  // =========================
+
+  const handleRegister = () => {
+    setAuthScreen("register");
+    setAuthEmail("");
+  };
+
+  // =========================
+  // REGISTRATION OTP
+  // =========================
+
+  const handleRegisterOTP = (email) => {
+    setAuthEmail(email);
+    setAuthScreen("register-otp");
+  };
+
+  // =========================
+  // REGISTRATION COMPLETE
+  // =========================
+
+  const handleRegistrationComplete = () => {
+    setAuthEmail("");
+    setAuthScreen("login");
+  };
+
+  // =========================
+  // BACK TO LOGIN
+  // =========================
+
+  const handleBackToLogin = () => {
+    setAuthEmail("");
+    setAuthScreen("login");
+  };
+
+  // =========================
+  // BACK TO REGISTER
+  // =========================
+
+  const handleBackToRegister = () => {
+    setAuthEmail("");
+    setAuthScreen("register");
+  };
+
+  // =========================
+  // LOGOUT
+  // =========================
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
 
     setIsLoggedIn(false);
+    setAuthEmail("");
+    setAuthScreen("login");
+
     setTasks([]);
   };
 
@@ -200,11 +286,40 @@ function App() {
   };
 
   // =========================
-  // LOGIN
+  // AUTHENTICATION SCREENS
   // =========================
 
   if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} />;
+    if (authScreen === "register") {
+      return (
+        <Register
+          onRegisterOTP={handleRegisterOTP}
+          onBackToLogin={handleBackToLogin}
+        />
+      );
+    }
+
+    if (authScreen === "register-otp") {
+      return (
+        <RegisterOTP
+          email={authEmail}
+          onRegistrationComplete={handleRegistrationComplete}
+          onBack={handleBackToRegister}
+        />
+      );
+    }
+
+    if (authScreen === "login-otp") {
+      return (
+        <LoginOTP
+          email={authEmail}
+          onLogin={handleLogin}
+          onBack={handleBackToLogin}
+        />
+      );
+    }
+
+    return <Login onLoginOTP={handleLoginOTP} onRegister={handleRegister} />;
   }
 
   // =========================
