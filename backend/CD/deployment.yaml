@@ -7,7 +7,7 @@ spec:
   minReadySeconds: 3
   replicas: 1
   selector: 
-    matchExpression:
+    matchExpressions:
       - key: app
         operator: In
         values:
