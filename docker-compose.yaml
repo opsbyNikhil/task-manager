@@ -43,8 +43,11 @@ services:
     depends_on:
       - db_task_manager
   
-  networks:
-    task_manager-network:
-      driver: bridge
+volumes:
+  task_manager_db:
+
+networks:
+  task_manager-network:
+    driver: bridge
 
 
