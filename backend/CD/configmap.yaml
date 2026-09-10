@@ -4,10 +4,10 @@ metadata:
   name: task-manager-backend-service-configmap
   namespace: dev
 data:
-  DEBUG: True
-  DB_HOST: 127.0.0.1
+  DEBUG: "True"
+  DB_HOST: db_task_manager
   DB_NAME: task_manager
   DB_PORT: 3306
-  ALLOWED_HOSTS: localhost,127.0.0.1
-  CORS_ALLOWED_ORIGINS: http://localhost:5173
+  ALLOWED_HOSTS: localhost,127.0.0.1, 54.254.120.73
+  CORS_ALLOWED_ORIGINS: http://54.254.120.73:5173
   RESEND_FROM_EMAIL: no-reply@mysitedesign.site
