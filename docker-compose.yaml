@@ -1,0 +1,46 @@
+services:
+
+  task-manager-backend:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    environment:
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    networks:
+      - task_manager-network
+    restart:  always
+    depends_on:
+      - db_task_manager
+
+  db_task_manager:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: task_manager
+      MYSQL_ROOT_PASSWORD: nikhil@12345
+    ports:
+      - "3306:3306"
+    networks:
+      - task_manager-network
+    volumes:
+      - task_manager_db:/var/lib/mysql
+    restart: always
+
+  task-manager-frontend:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://13.229.237.191:8000/api
+      ports:
+        - "5173:80"
+      network:
+        - task_manager-network
+      restart:  always
+      depends_on:
+        - db_task_manager
+
+
