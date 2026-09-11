@@ -10,6 +10,10 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+
 from .models import Task, OTPVerification, UserProfile
 from .serializers import TaskSerializer, RegistrationSerializer,VerifyRegistrationOTPSerializer, LoginOTPSerializer, VerifyLoginOTPSerializer
 from .services.email_service import send_email
@@ -407,3 +411,13 @@ class VerifyLoginOTPView(generics.GenericAPIView):
             },
             status=status.HTTP_200_OK,
         )
+
+@api_view(["GET"])
+def health_check(request):
+    return Response(
+        {
+            "status": "healthy",
+            "service": "task-manager-backend"
+        },
+        status=status.HTTP_200_OK
+    )

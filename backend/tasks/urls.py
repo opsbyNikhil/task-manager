@@ -7,7 +7,7 @@ from .views import (
     VerifyRegistrationOTPView,
     LoginOTPView,
     VerifyLoginOTPView,
-    test_email,
+    test_email,health_check
 )
 
 
@@ -49,6 +49,9 @@ urlpatterns = [
         VerifyLoginOTPView.as_view(),
         name="verify-login-otp",
     ),
+
+    path("health/", health_check, name="health"),
+
 ]
 
 urlpatterns += router.urls
