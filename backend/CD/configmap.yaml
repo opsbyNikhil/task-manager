@@ -5,7 +5,7 @@ metadata:
   namespace: dev
 data:
   DEBUG: "True"
-  DB_HOST: db_task_manager
+  DB_HOST: db-task-manager
   DB_NAME: task_manager
   DB_PORT: "3306"
   ALLOWED_HOSTS: "localhost,127.0.0.1, 54.254.120.73"
