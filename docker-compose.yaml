@@ -13,12 +13,12 @@ services:
     ports:
       - "8000:8000"
     networks:
-      - task_manager-network
+      - task-manager-network
     restart:  always
     depends_on:
-      - db_task_manager
+      - db-task-manager
 
-  db_task_manager:
+  db-task-manager:
     image: mysql:8.0
     environment:
       MYSQL_DATABASE: task_manager
@@ -26,13 +26,13 @@ services:
     ports:
       - "3306:3306"
     networks:
-      - task_manager-network
+      - task-manager-network
     volumes:
-      - task_manager_db:/var/lib/mysql
+      - task-manager-db:/var/lib/mysql
     restart: always
 
   task-manager-frontend:
-    image: task_manager_frontend:${task_manager_frontend}
+    image: task-manager-frontend:${task_manager_frontend}
 
     build:
       context: ./frontend/
@@ -42,16 +42,16 @@ services:
     ports:
       - "5173:80"
     networks:
-      - task_manager-network
+      - task-manager-network
     restart:  always
     depends_on:
-      - db_task_manager
+      - task-manager-backend
   
 volumes:
-  task_manager_db:
+  task-manager-db:
 
 networks:
-  task_manager-network:
+  task-manager-network:
     driver: bridge
 
 
