@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
         - name: task-manager-backend
-          image: 984912521466.dkr.ecr.ap-southeast-1.amazonaws.com/task-manager-backend:1.0.0
+          image: 984912521466.dkr.ecr.ap-southeast-1.amazonaws.com/task-manager-backend:1.0.1
           envFrom:
             - configMapRef:
                 name: task-manager-backend-service-configmap
