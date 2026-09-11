@@ -9,6 +9,6 @@ spec:
     app: task-manager-frontend-app
   ports:
     - port: 5173
-      nodePort: 30012
+      nodePort: 5173
       targetPort: 30012
       protocol: TCP
