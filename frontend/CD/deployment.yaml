@@ -29,7 +29,7 @@ spec:
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:
-                name: 
+                name: task-manager-frontend-configmap
           readinessProbe:
             httpGet:
               path: /
