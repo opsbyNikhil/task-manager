@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: db_task_manager
+  name: db-task-manager
   namespace: dev
 spec:
   minReadySeconds: 3
@@ -12,11 +12,11 @@ spec:
       - key: app
         operator: In
         values:
-          - db_task_manager
+          - db-task-manager
   template:
     metadata:
       labels:
-        app: db_task_manager
+        app: db-task-manager
     spec:
       containers:
         - name: mysql
@@ -34,15 +34,15 @@ spec:
                   name: task-manager-backend-service-secret
                   key: DB_PASSWORD
           volumeMounts:
-            - name: task_manager_db
+            - name: task-manager-db
               mountPath: /var/lib/mysql
   volumeClaimTemplates:
     - metadata: 
-        name: task_manager_db
+        name: task-manager-db
       spec:
         accessModes: 
           - ReadWriteOnce
-        storageClassName: 
+        storageClassName: task-manager-ebs
         resources:
           requests:
             storage: 256Mi

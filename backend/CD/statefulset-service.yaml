@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 
 metadata:
-  name: db_task_manager
+  name: db-task-manager
   namespace: dev
 
 spec:
@@ -10,7 +10,7 @@ spec:
   clusterIP: None
 
   selector:
-    app: db_task_manager
+    app: db-task-manager
 
   ports:
     - port: 3306
