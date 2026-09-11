@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: task-manager-frontend-dep
+  namespace: frontend-dev
+spec:
+  minReadySeconds: 3
+  replicas: 1
+  selector:
+    matchExpressions: 
+      - key: app
+        operator: In
+        values:
+          - task-manager-frontend-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      name: task-manager-frontend-pod
+      labels:
+        app: task-manager-frontend-app
+    spec:
+      containers:
+        - image:  
+          name: task-manager-frontend
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: 
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5173
+            initialDelaySeconds: 3
+            timeoutSeconds: 2
+            periodSeconds: 10
+            failureThreshold: 3
+          ports:
+            - containerPort: 5173
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "80Mi"
+            limits:
+              cpu: "80m"
+              memory: "!00Mi"

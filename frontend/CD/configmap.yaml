@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: task-manager-frontend-configmap
+  namespace: dev
+data:
+  VITE_API_URL: http://54.254.120.73:8000/api
