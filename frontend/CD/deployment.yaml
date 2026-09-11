@@ -24,7 +24,7 @@ spec:
         app: task-manager-frontend-app
     spec:
       containers:
-        - image:  
+        - image: 984912521466.dkr.ecr.ap-southeast-1.amazonaws.com/task_manager_frontend:1.0.0
           name: task-manager-frontend
           imagePullPolicy: IfNotPresent
           envFrom:
@@ -47,4 +47,4 @@ spec:
               memory: "80Mi"
             limits:
               cpu: "80m"
-              memory: "!00Mi"
+              memory: "100Mi"
