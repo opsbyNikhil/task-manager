@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata: 
   name: task-manager-frontend-dep
-  namespace: frontend-dev
+  namespace: dev
 spec:
   minReadySeconds: 3
   replicas: 1
