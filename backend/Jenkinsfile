@@ -18,11 +18,24 @@ pipeline {
 
         stage ("Install Dependencies") {
             steps {
-                sh """
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install -r backend/requirements.txt
-                """
+                dir ("backend") {
+                    sh """
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install -r requirements.txt
+                    """
+                }
+            }
+        }
+
+        stage ("Run Tests") {
+            steps {
+                dir ("backend") {
+                    sh """
+                    . venv/bin/activate
+                    python manage.pt test 
+                    """
+                }
             }
         }
 
