@@ -33,11 +33,11 @@ pipeline {
                 dir ("backend") {
                     withCredentials([
                         string(
-                            credentialsId: 'Task-Manager-Django-Secret-Key', 
+                            credentialsId: 'task-manager-django-secret-key',
                             variable: 'SECRET_KEY'
                         ),
                         string(
-                            credentialsId: 'Task-Manager-Resend-API-Key', 
+                            credentialsId: 'task-manager-resend-api-key',
                             variable: 'RESEND_API_KEY'
                         ),
                     ]) 
