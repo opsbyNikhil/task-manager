@@ -33,7 +33,7 @@ pipeline {
                 dir ("backend") {
                     sh """
                     . venv/bin/activate
-                    python manage.pt test 
+                    python manage.py test 
                     """
                 }
             }
