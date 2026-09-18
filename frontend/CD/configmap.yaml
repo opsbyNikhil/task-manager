@@ -4,4 +4,4 @@ metadata:
   name: task-manager-frontend-configmap
   namespace: dev
 data:
-  VITE_API_URL: http://54.254.120.73:8000/api
+  VITE_API_URL: http://13.213.19.86:8000/api
