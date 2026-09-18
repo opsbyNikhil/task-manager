@@ -1,0 +1,55 @@
+pipeline {
+    
+    agent {
+        label "task-manager"
+    }
+    
+    triggers {
+        pollSCM ("* * * * *")
+    }
+
+    stages {
+        stage ("git checkout") {
+            steps {
+                git url: "https://github.com/opsbyNikhil/task-manager.git",
+                    branch: "dev"
+            }
+        }
+
+        stage ("Install Dependencies") {
+            steps {
+                dir ("backend") {
+                    sh """
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install -r requirements.txt
+                    """
+                }
+            }
+        }
+
+        stage ("Run Tests") {
+            steps {
+                dir ("backend") {
+                    withCredentials([
+                        string(
+                            credentialsId: 'Task-Manager-Django-Secret-Key', 
+                            variable: 'SECRET_KEY'
+                        ),
+                        string(
+                            credentialsId: 'Task-Manager-Resend-API-Key', 
+                            variable: 'RESEND_API_KEY'
+                        ),
+                    ]) 
+                    {
+                        sh """
+                        . venv/bin/activate
+                        python manage.py test 
+                        """
+                    }
+                }
+            }
+        }
+
+    }
+}
