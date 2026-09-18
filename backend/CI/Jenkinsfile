@@ -42,24 +42,28 @@ pipeline {
                         ),
                     ]) 
                     {
-                        sh """
-                            if [ -z "$SECRET_KEY" ]; then
-                                echo "SECRET_KEY is NOT available"
-                                exit 1
-                            else
-                                echo "SECRET_KEY is available"
-                            fi
+                        withEnv([
+                            'CORS_ALLOWED_ORIGINS=http://localhost:5173'
+                        ]) {
+                            sh """
+                                if [ -z "$SECRET_KEY" ]; then
+                                    echo "SECRET_KEY is NOT available"
+                                    exit 1
+                                else
+                                    echo "SECRET_KEY is available"
+                                fi
 
-                            if [ -z "$RESEND_API_KEY" ]; then
-                                echo "RESEND_API_KEY is NOT available"
-                                exit 1
-                            else
-                                echo "RESEND_API_KEY is available"
-                            fi
+                                if [ -z "$RESEND_API_KEY" ]; then
+                                    echo "RESEND_API_KEY is NOT available"
+                                    exit 1
+                                else
+                                    echo "RESEND_API_KEY is available"
+                                fi
 
-                            . venv/bin/activate
-                            python manage.py test
-                        """
+                                . venv/bin/activate
+                                python manage.py test
+                            """
+                        }    
                     }
                 }
             }
