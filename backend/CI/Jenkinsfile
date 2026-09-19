@@ -73,7 +73,7 @@ pipeline {
             steps {
                 withCredentials ([
                     string(
-                        credentialsId: 'nvd-api-key', 
+                        credentialsId: 'NVD_API_KEY', 
                         variable: 'NVD_API_KEY'
                     )
                 ]) {
