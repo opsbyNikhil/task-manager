@@ -71,15 +71,23 @@ pipeline {
 
         stage ("OWASP Dependency-Check") {
             steps {
-                dir ("backend") {
-                    sh """
-                        dependency-check.sh \
-                            --project "Task Manager Backend" \
-                            --scan . \
-                            --format HTML \
-                            --out dependency-check-report \
-                            --failOnCVSS 7
-                    """
+                withCredentials ([
+                    string(
+                        credentialsId: 'nvd-api-key', 
+                        variable: 'NVD_API_KEY'
+                    )
+                ]) {
+                    dir ("backend") {
+                        sh """
+                            dependency-check.sh \
+                                --project "Task Manager Backend" \
+                                --scan . \
+                                --format HTML \
+                                --out dependency-check-report \
+                                --nvdApiKey "\$NVD_API_KEY" \
+                                --failOnCVSS 7
+                        """
+                    }
                 }
             }
         }
