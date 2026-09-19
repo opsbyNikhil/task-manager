@@ -72,15 +72,13 @@ pipeline {
         stage ("OWASP Dependency-Check") {
             steps {
                 dir ("backend") {
-                    sh """"
+                    sh """
                         dependency-check.sh \
                             --project "Task Manager Backend" \
                             --scan . \
                             --format HTML \
                             --out dependency-check-report \
                             --failOnCVSS 7
-
-
                     """
                 }
             }
