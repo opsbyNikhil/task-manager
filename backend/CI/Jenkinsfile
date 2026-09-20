@@ -79,7 +79,7 @@ pipeline {
                     )]){
                     withSonarQubeEnv("SONAR_ID") {
                         sh """
-                            sonar-scanner
+                                $SCANNER_HOME/bin/sonar-scanner \
                                 -Dsonar.projectKey=opsbyNikhil_task-manager \
                                 -Dsonar.organization=opsbynikhil \
                                 -Dsonar.host.url=https://sonarcloud.io \
