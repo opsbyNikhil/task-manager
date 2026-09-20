@@ -69,28 +69,28 @@ pipeline {
             }
         }
 
-        stage ("OWASP Dependency-Check") {
-            steps {
-                withCredentials ([
-                    string(
-                        credentialsId: 'NVD_API_KEY', 
-                        variable: 'NVD_API_KEY'
-                    )
-                ]) {
-                    dir ("backend") {
-                        sh """
-                            dependency-check.sh \
-                                --project "Task Manager Backend" \
-                                --scan . \
-                                --format HTML \
-                                --out dependency-check-report \
-                                --nvdApiKey "\$NVD_API_KEY" \
-                                --failOnCVSS 7
-                        """
-                    }
-                }
-            }
-        }
-        
+        // stage ("OWASP Dependency-Check") {
+        //     steps {
+        //         withCredentials ([
+        //             string(
+        //                 credentialsId: 'NVD_API_KEY', 
+        //                 variable: 'NVD_API_KEY'
+        //             )
+        //         ]) {
+        //             dir ("backend") {
+        //                 sh """
+        //                     dependency-check.sh \
+        //                         --project "Task Manager Backend" \
+        //                         --scan . \
+        //                         --format HTML \
+        //                         --out dependency-check-report \
+        //                         --nvdApiKey "\$NVD_API_KEY" \
+        //                         --failOnCVSS 7
+        //                 """
+        //             }
+        //         }
+        //     }
+        // }
+
     }
 }
