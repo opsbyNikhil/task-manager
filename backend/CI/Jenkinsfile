@@ -69,6 +69,28 @@ pipeline {
             }
         }
 
+        stage ("Sonarqube scan") {
+            steps {
+                dir ("backend") {
+                    withCredentials([
+                        string(
+                            credentialsId: "SONAR_ID",
+                            variable: "SONAR_TOKEN"
+                    )]){
+                    withSonarQubeEnv("SONAR_ID") {
+                        sh """
+                            sonar-scanner
+                                -Dsonar.projectKey=opsbyNikhil_task-manager \
+                                -Dsonar.organization=opsbynikhil \
+                                -Dsonar.host.url=https://sonarcloud.io \
+                                -Dsonar.login=$SONAR_TOKEN
+                        """
+                    }     
+                    }
+                }
+            }
+        }
+
         // stage ("OWASP Dependency-Check") {
         //     steps {
         //         withCredentials ([
@@ -91,6 +113,7 @@ pipeline {
         //         }
         //     }
         // }
+
 
     }
 }
