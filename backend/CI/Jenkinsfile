@@ -1,4 +1,10 @@
 pipeline {
+    environment {
+        SECRET_KEY = credentials('task-manager-django-secret-key')
+        RESEND_API_KEY = credentials('task-manager-resend-api-key')
+        DB_PASSWORD = credentails('task-manager-db-password')
+        task_manager_backend = "${BUILD_NUMBER}"
+    }
     
     agent {
         label "task-manager"
@@ -87,13 +93,22 @@ pipeline {
                                         -Dsonar.host.url=https://sonarcloud.io \
                                         -Dsonar.login=$SONAR_TOKEN
                                 """
-
                         }
                     }     
                     }
                 }
             }
         }
+
+        stage ("Docker Image") {
+            steps {
+                dir ("backend") {
+                    sh '''docker compose build task-manager-backend
+                }
+            }
+        }
+
+
 
         // stage ("OWASP Dependency-Check") {
         //     steps {
