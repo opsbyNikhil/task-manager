@@ -81,7 +81,7 @@ pipeline {
                             def scannerhome = tool "SONAR_ID"
                             withSonarQubeEnv("SONAR_ID") {
                                 sh """
-                                    ${sonar-scanner}/bin/sonar-scanner \
+                                    ${scannerhome}/bin/sonar-scanner \
                                         -Dsonar.projectKey=opsbyNikhil_task-manager \
                                         -Dsonar.organization=opsbynikhil \
                                         -Dsonar.host.url=https://sonarcloud.io \
