@@ -103,9 +103,10 @@ pipeline {
         stage ("Docker Image") {
             steps {
                 dir ("backend") {
-                    sh '''docker compose build task-manager-backend
+                    sh '''docker compose build task-manager-backend'''
                 }
             }
         }
+
     }
 }
