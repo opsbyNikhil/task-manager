@@ -6,29 +6,40 @@ services:
     build:
       context: ./backend/
       dockerfile: Dockerfile
+
     environment:
       - CORS_ALLOWED_ORIGINS=http://54.254.120.73:5173
+    
     env_file:
       - ./backend/.env
+    
     ports:
       - "8000:8000"
+    
     networks:
       - task-manager-network
+    
     restart:  always
+    
     depends_on:
       - db-task-manager
 
   db-task-manager:
     image: mysql:8.0
+
     environment:
       MYSQL_DATABASE: task_manager
-      MYSQL_ROOT_PASSWORD: nikhil@12345
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+
     ports:
       - "3306:3306"
+    
     networks:
       - task-manager-network
+    
     volumes:
       - task-manager-db:/var/lib/mysql
+    
     restart: always
 
   task-manager-frontend:
