@@ -1,0 +1,19 @@
+pipeline {
+    
+    agent {
+        label "task-manager"
+    }
+
+    triggers {
+        pollSCM("* * * * *")
+    }
+
+    stages {
+        stage ("Git checkout") {
+            steps {
+                git url: "https://github.com/opsbyNikhil/task-manager.git",
+                    branch: "dev"
+            }
+        }
+    }
+}
