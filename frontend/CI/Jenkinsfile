@@ -36,16 +36,37 @@ pipeline {
             }
         }
 
-        stage ("OWASP Dependency Check") {
+        stage ("Deploy Frontend to S3") {
             steps {
                 dir ("frontend") {
-                    sh """
-                        dependency-check.sh \
-                            --project "Task Manager Frontend" \
-                            --scan . \
-                            --format HTML \
-                            --out dependency-check-report
-                    """
+                    withCredentials([
+                        string(
+                            credentialsId: "AWS_ACCESS_KEY_ID",
+                            variable: "AWS_ACCESS_KEY_ID"
+                        ),
+                        string(
+                            credentialsId: "AWS_SECRET_ACCESS_KEY",
+                            variable: "AWS_SECRET_ACCESS_KEY"
+                        ),
+                        string(
+                            credentialsId: "AWS_REGION",
+                            variable: "AWS_REGION"
+                        ),
+                        string(
+                            credentialsId: "AWS_S3_BUCKET",
+                            variable: "AWS_S3_BUCKET"
+                        ),
+                    ]) {
+                        sh """
+                            echo "uploading frontend to s3"
+                            aws s3 sync dist/ \
+                                s3://\$AWS_S3_BUCKET/ \
+                                --delete \
+                                --region "\$AWS_REGION"
+
+                            echo "Frontend deployment completed"
+                        """
+                    }
                 }
             }
         }
