@@ -140,20 +140,20 @@ pipeline {
                     ]){
                         sh """
                             echo "Logging in to Amazon ECR"
-                            aws ecr get-login-password \ 
-                                --region "$AWS_REGION" | \ 
-                            docker login \ 
-                                --username AWS \ 
-                                --password-stdin \ 
+                            aws ecr get-login-password \
+                                --region "$AWS_REGION" | \
+                            docker login \
+                                --username AWS \
+                                --password-stdin \
                             "$AWS_ACCOUNT_ID".dkr.ecr."$AWS_REGION".amazonaws.com
 
                             echo "Tagging Docker Image"
-                            docker tag \ 
+                            docker tag \
                             task-manager-backend:$task_manager_backend \
                             "$AWS_ACCOUNT_ID".dkr.ecr."$AWS_REGION".amazonaws.com/task-manager-backend:$task_manager_backend
 
                             echo "Docker Push"
-                            docker push \ 
+                            docker push \
                             "$AWS_ACCOUNT_ID".dkr.ecr."$AWS_REGION".amazonaws.com/task-manager-backend:$task_manager_backend
                         """ 
                     }
