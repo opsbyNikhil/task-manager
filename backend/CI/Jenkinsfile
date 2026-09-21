@@ -1,8 +1,8 @@
 pipeline {
     environment {
-        SECRET_KEY = credentials('task-manager-django-secret-key')
-        RESEND_API_KEY = credentials('task-manager-resend-api-key')
-        DB_PASSWORD = credentails('task-manager-db-password')
+        SECRET_KEY = credentials('SECRET_KEY')
+        RESEND_API_KEY = credentials('RESEND_API_KEY')
+        DB_PASSWORD = credentails('DB_PASSWORD')
         task_manager_backend = "${BUILD_NUMBER}"
     }
     
@@ -107,6 +107,6 @@ pipeline {
                 }
             }
         }
-        
+
     }
 }
