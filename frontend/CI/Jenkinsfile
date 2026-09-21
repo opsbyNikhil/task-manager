@@ -35,5 +35,21 @@ pipeline {
                 }
             }
         }
+
+        stage ("OWASP Dependency Check") {
+            steps {
+                dir ("frontend") {
+                    sh """
+                        dependency-check.sh \
+                            --project "Task Manager Frontend" \
+                            --scan . \
+                            --format HTML \
+                            --out dependency-check-report
+                    """
+                }
+            }
+        }
+
+
     }
 }
