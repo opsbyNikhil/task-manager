@@ -9,10 +9,28 @@ pipeline {
     }
 
     stages {
-        stage ("Git checkout") {
+        stage ("Git Checkout") {
             steps {
                 git url: "https://github.com/opsbyNikhil/task-manager.git",
                     branch: "dev"
+            }
+        }
+
+        stage ("Install Dependencies") {
+            dir ("frontend") {
+                steps {
+                    sh """
+                        npm install
+                    """
+                }
+            }
+        }
+
+        stage ("Build Frontend") {
+            dir ("frontend") {
+                sh """
+                    npm run build
+                """
             }
         }
     }
