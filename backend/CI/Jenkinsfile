@@ -3,7 +3,11 @@ pipeline {
         SECRET_KEY = credentials('SECRET_KEY')
         RESEND_API_KEY = credentials('RESEND_API_KEY')
         DB_PASSWORD = credentials('DB_PASSWORD')
+        AWS_ACCOUNT_ID = credentials("AWS_ACCOUNT_ID")
+        AWS_REGION = credentials("AWS_REGION")
+        AWS_REPOSITORY = credentials("AWS_REPOSITORY")
         task_manager_backend = "${BUILD_NUMBER}"
+
     }
     
     agent {
@@ -105,6 +109,54 @@ pipeline {
             steps {
                 dir ("backend") {
                     sh '''docker compose build task-manager-backend'''
+                }
+            }
+        }
+
+        stage ("Push Docker Image to ECR") {
+            steps {
+                dir ("backend") {
+                    withCredentials([
+                        string(
+                            credentialsId: "AWS_ACCESS_KEY_ID",
+                            variable: "AWS_ACCESS_KEY_ID"
+                        ),
+                        string(
+                            credentialsId: "AWS_SECRET_ACCESS_KEY",
+                            variable: "AWS_SECRET_ACCESS_KEY"
+                        ),
+                        string(
+                            credentialsId: "AWS_ACCOUNT_ID",
+                            variable: "AWS_ACCOUNT_ID"
+                        ),
+                        string(
+                            credentialsId: "AWS_REGION",
+                            variable: "AWS_REGION"
+                        ),
+                        string(
+                            credentialsId: "AWS_REPOSITORY",
+                            variable: "AWS_REPOSITORY"
+                        ),
+                    ]){
+                        sh """
+                            echo "Logging in to Amazon ECR"
+                            aws ecr get-login-password \ 
+                                --region "$AWS_REGION" | \ 
+                            docker login \ 
+                                --username AWS \ 
+                                --password-stdin \ 
+                            "$AWS_ACCOUNT_ID".dkr.ecr."$AWS_REGION".amazonaws.com
+
+                            echo "Tagging Docker Image"
+                            docker tag \ 
+                            task-manager-backend:$task_manager_backend \
+                            "$AWS_ACCOUNT_ID".dkr.ecr."$AWS_REGION".amazonaws.com/task-manager-backend:$task_manager_backend
+
+                            echo "Docker Push"
+                            docker push \ 
+                            "$AWS_ACCOUNT_ID".dkr.ecr."$AWS_REGION".amazonaws.com/task-manager-backend:$task_manager_backend
+                        """ 
+                    }
                 }
             }
         }
