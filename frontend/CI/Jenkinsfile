@@ -17,8 +17,8 @@ pipeline {
         }
 
         stage ("Install Dependencies") {
-            dir ("frontend") {
-                steps {
+            steps {
+                dir ("frontend") {
                     sh """
                         npm install
                     """
@@ -27,10 +27,12 @@ pipeline {
         }
 
         stage ("Build Frontend") {
-            dir ("frontend") {
-                sh """
-                    npm run build
-                """
+            steps {
+                dir ("frontend") {
+                    sh """
+                        npm run build
+                    """
+                }
             }
         }
     }
