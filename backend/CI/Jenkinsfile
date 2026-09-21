@@ -15,6 +15,7 @@ pipeline {
     }
 
     stages {
+
         stage ("git checkout") {
             steps {
                 git url: "https://github.com/opsbyNikhil/task-manager.git",
@@ -107,6 +108,5 @@ pipeline {
                 }
             }
         }
-
     }
 }
