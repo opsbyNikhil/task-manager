@@ -1,8 +1,8 @@
 pipeline {
     environment {
-        SECRET_KEY = credentails('SECRET_KEY')
-        RESEND_API_KEY = credentails('RESEND_API_KEY')
-        DB_PASSWORD = credentails('DB_PASSWORD')
+        SECRET_KEY = credentials('SECRET_KEY')
+        RESEND_API_KEY = credentials('RESEND_API_KEY')
+        DB_PASSWORD = credentials('DB_PASSWORD')
         task_manager_backend = "${BUILD_NUMBER}"
     }
     
