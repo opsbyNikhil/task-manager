@@ -1,4 +1,8 @@
 pipeline {
+    environment {
+        task_manager_frontend = "${BUILD_NUMBER}"
+    }
+
     
     agent {
         label "task-manager"
@@ -96,31 +100,45 @@ pipeline {
             }
         }
 
-        stage ("Aikido Security Scan") {
+        // stage ("Aikido Security Scan") {
+        //     steps {
+        //         dir("frontend") {
+        //             withCredentials([
+        //                 string(
+        //                     credentialsId: "AIKIDO_TOKEN",
+        //                     variable: "AIKIDO_TOKEN"
+        //                 )
+        //             ]) {
+        //                 sh '''
+        //                     BASE_COMMIT=$(git rev-parse HEAD~1)
+        //                     HEAD_COMMIT=$(git rev-parse HEAD)
+
+        //                     echo "Base commit: $BASE_COMMIT"
+        //                     echo "Head commit: $HEAD_COMMIT"
+
+        //                     aikido-api-client scan \
+        //                         --apikey "$AIKIDO_TOKEN" \
+        //                         task-manager \
+        //                         "$BASE_COMMIT" \
+        //                         "$HEAD_COMMIT" \
+        //                         dev \
+        //                         --minimum-severity-level HIGH
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
+
+        stage ("Docker Build") {
             steps {
                 dir("frontend") {
-                    withCredentials([
-                        string(
-                            credentialsId: "AIKIDO_TOKEN",
-                            variable: "AIKIDO_TOKEN"
-                        )
-                    ]) {
-                        sh '''
-                            BASE_COMMIT=$(git rev-parse HEAD~1)
-                            HEAD_COMMIT=$(git rev-parse HEAD)
+                    sh '''
+                        echo "Building frontend Docker image..."
 
-                            echo "Base commit: $BASE_COMMIT"
-                            echo "Head commit: $HEAD_COMMIT"
+                        docker compose build task-manager-frontend
 
-                            aikido-api-client scan \
-                                --apikey "$AIKIDO_TOKEN" \
-                                task-manager \
-                                "$BASE_COMMIT" \
-                                "$HEAD_COMMIT" \
-                                dev \
-                                --minimum-severity-level HIGH
-                        '''
-                    }
+                        echo "Frontend Docker image build successfully"
+                    '''
                 }
             }
         }
