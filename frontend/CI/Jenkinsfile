@@ -58,9 +58,9 @@ pipeline {
                         ),
                     ]) {
                         sh """
-                            echo "uploading frontend to s3"
+                            echo "uploading frontend build-${BUILD_NUMBER} to s3"
                             aws s3 sync dist/ \
-                                s3://\$AWS_S3_BUCKET/ \
+                                s3://\$AWS_S3_BUCKET/build-${BUILD_NUMBER}/ \
                                 --delete \
                                 --region "\$AWS_REGION"
 
@@ -95,6 +95,8 @@ pipeline {
                 }
             }
         }
+
+        stage ("")
 
 
     }
