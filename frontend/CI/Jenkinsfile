@@ -148,55 +148,56 @@ pipeline {
             }
         }
 
-        stage ("Push Docker Image to ECR") {
+       
+        stage("Push Docker Image to ECR") {
             steps {
-                dir ("frontend") {
-                    withCredentials([
-                        string(
-                            credentialsId: "AWS_ACCESS_KEY_ID",
-                            variable: "AWS_ACCESS_KEY_ID"
-                        ),
-                        string(
-                            credentialsId: "AWS_SECRET_ACCESS_KEY",
-                            variable: "AWS_SECRET_ACCESS_KEY"
-                        ),
-                        string(
-                            credentialsId: "AWS_ACCOUNT_ID",
-                            variable: "AWS_ACCOUNT_ID"
-                        ),
-                        string(
-                            credentialsId: "AWS_REGION",
-                            variable: "AWS_REGION"
-                        ),
-                        string(
-                            credentialsId: "AWS_REPOSITORY_FRONTEND",
-                            variable: "AWS_REPOSITORY_FRONTEND"
-                        ),
-                    ]) {
-                        sh '''
-                            echo "Logging into Amazon ECR"
-                            aws ecr get-login-password \
-                                --region "$AWS_REGION" | \
-                            docker login 
-                                --username AWS \
-                                --password-stdin \
-                            "$AWS_ACCOUNT_ID".dkr.ecr."$AWS_REGION".amazonaws.com
+                withCredentials([
+                    string(
+                        credentialsId: "AWS_ACCESS_KEY_ID",
+                        variable: "AWS_ACCESS_KEY_ID"
+                    ),
+                    string(
+                        credentialsId: "AWS_SECRET_ACCESS_KEY",
+                        variable: "AWS_SECRET_ACCESS_KEY"
+                    ),
+                    string(
+                        credentialsId: "AWS_ACCOUNT_ID",
+                        variable: "AWS_ACCOUNT_ID"
+                    ),
+                    string(
+                        credentialsId: "AWS_REGION",
+                        variable: "AWS_REGION"
+                    ),
+                    string(
+                        credentialsId: "AWS_REPOSITORY_FRONTEND",
+                        variable: "AWS_REPOSITORY_FRONTEND"
+                    )
+                ]) {
+                    sh '''
+                        echo "Logging into Amazon ECR"
 
-                            echo "Tagging Docker Image"
-                            docker tag \
-                            task_manager_frontend:$task_manager_frontend \
-                            "$AWS_ACCOUNT_ID".dkr.ecr."$AWS_REGION".amazonaws.com/task_manager_frontend:$task_manager_frontend
-                        
-                            echo "Docker Push"
-                            docker push \
-                            "$AWS_ACCOUNT_ID".dkr.ecr."$AWS_REGION".amazonaws.com/task_manager_frontend:$task_manager_frontend
+                        ECR_REGISTRY="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
 
-                            echo "Docker Frontend Image Successfully pushed to ECR"                       
-                        '''
-                    }
+                        aws ecr get-login-password --region "$AWS_REGION" | \
+                        docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
+                        echo "Tagging Docker Image"
+
+                        docker tag \
+                            "task-manager-frontend:$task_manager_frontend" \
+                            "$ECR_REGISTRY/$AWS_REPOSITORY_FRONTEND:$task_manager_frontend"
+
+                        echo "Docker Push"
+
+                        docker push \
+                            "$ECR_REGISTRY/$AWS_REPOSITORY_FRONTEND:$task_manager_frontend"
+
+                        echo "Docker Frontend Image Successfully pushed to ECR"
+                    '''
                 }
             }
         }
+
+
     }
 }
