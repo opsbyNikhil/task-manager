@@ -148,56 +148,55 @@ pipeline {
             }
         }
 
-       
         stage("Push Docker Image to ECR") {
             steps {
-                withCredentials([
-                    string(
-                        credentialsId: "AWS_ACCESS_KEY_ID",
-                        variable: "AWS_ACCESS_KEY_ID"
-                    ),
-                    string(
-                        credentialsId: "AWS_SECRET_ACCESS_KEY",
-                        variable: "AWS_SECRET_ACCESS_KEY"
-                    ),
-                    string(
-                        credentialsId: "AWS_ACCOUNT_ID",
-                        variable: "AWS_ACCOUNT_ID"
-                    ),
-                    string(
-                        credentialsId: "AWS_REGION",
-                        variable: "AWS_REGION"
-                    ),
-                    string(
-                        credentialsId: "AWS_REPOSITORY_FRONTEND",
-                        variable: "AWS_REPOSITORY_FRONTEND"
-                    )
-                ]) {
-                    sh '''
-                        echo "Logging into Amazon ECR"
+                dir("frontend") {
+                    withCredentials([
+                        string(
+                            credentialsId: "AWS_ACCESS_KEY_ID",
+                            variable: "AWS_ACCESS_KEY_ID"
+                        ),
+                        string(
+                            credentialsId: "AWS_SECRET_ACCESS_KEY",
+                            variable: "AWS_SECRET_ACCESS_KEY"
+                        ),
+                        string(
+                            credentialsId: "AWS_ACCOUNT_ID",
+                            variable: "AWS_ACCOUNT_ID"
+                        ),
+                        string(
+                            credentialsId: "AWS_REGION",
+                            variable: "AWS_REGION"
+                        ),
+                        string(
+                            credentialsId: "AWS_REPOSITORY_FRONTEND",
+                            variable: "AWS_REPOSITORY_FRONTEND"
+                        )
+                    ]) {
+                        sh '''
+                            echo "Logging into Amazon ECR"
 
-                        ECR_REGISTRY="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+                            ECR_REGISTRY="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
 
-                        aws ecr get-login-password --region "$AWS_REGION" | \
-                        docker login --username AWS --password-stdin "$ECR_REGISTRY"
+                            aws ecr get-login-password --region "$AWS_REGION" | \
+                            docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
-                        echo "Tagging Docker Image"
+                            echo "Tagging Frontend Docker Image"
 
-                        docker tag \
-                            "task-manager-frontend:$task_manager_frontend" \
-                            "$ECR_REGISTRY/$AWS_REPOSITORY_FRONTEND:$task_manager_frontend"
+                            docker tag \
+                                "task-manager-frontend:$task_manager_frontend" \
+                                "$ECR_REGISTRY/$AWS_REPOSITORY_FRONTEND:$task_manager_frontend"
 
-                        echo "Docker Push"
+                            echo "Pushing Frontend Docker Image"
 
-                        docker push \
-                            "$ECR_REGISTRY/$AWS_REPOSITORY_FRONTEND:$task_manager_frontend"
+                            docker push \
+                                "$ECR_REGISTRY/$AWS_REPOSITORY_FRONTEND:$task_manager_frontend"
 
-                        echo "Docker Frontend Image Successfully pushed to ECR"
-                    '''
+                            echo "Frontend Docker Image Successfully pushed to ECR"
+                        '''
+                    }
                 }
             }
         }
-
-
     }
 }
