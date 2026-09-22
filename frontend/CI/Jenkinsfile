@@ -151,7 +151,7 @@ pipeline {
         stage ("Push Docker Image to ECR") {
             steps {
                 dir ("frontend") {
-                    withCredentials ([
+                    withCredentials([
                         string(
                             credentialsId: "AWS_ACCESS_KEY_ID",
                             variable: "AWS_ACCESS_KEY_ID"
