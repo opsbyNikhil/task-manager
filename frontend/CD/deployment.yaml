@@ -23,8 +23,8 @@ spec:
       labels:
         app: task-manager-frontend-app
     spec:
-    securityContext:
-      runAsNonRoot: true
+      securityContext:
+        runAsNonRoot: true
       containers:
         - image: 984912521466.dkr.ecr.ap-southeast-1.amazonaws.com/task_manager_frontend:1.0.6
           name: task-manager-frontend
