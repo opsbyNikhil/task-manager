@@ -172,7 +172,7 @@ pipeline {
                             credentialsId: "AWS_REPOSITORY_FRONTEND",
                             variable: "AWS_REPOSITORY_FRONTEND"
                         ),
-                    ]){
+                    ]) {
                         sh '''
                             echo "Logging into Amazon ECR"
                             aws ecr get-login-password \
