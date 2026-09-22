@@ -173,7 +173,7 @@ pipeline {
                             variable: "AWS_REPOSITORY_FRONTEND"
                         ),
                     ]){
-                        sh '''
+                        sh """
                             echo "Logging into Amazon ECR"
                             aws ecr get-login-password \
                                 --region "$AWS_REGION" | \
@@ -192,7 +192,7 @@ pipeline {
                             "$AWS_ACCOUNT_ID".dkr.ecr."$AWS_REGION".amazonaws.com/task_manager_frontend:$task_manager_frontend
 
                             echo "Docker Frontend Image Successfully pushed to ECR"                       
-                        '''
+                        """
                     }
 
                 }
