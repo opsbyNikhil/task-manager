@@ -114,7 +114,7 @@ pipeline {
 
                             aikido-api-client scan \
                                 --apikey "$AIKIDO_TOKEN" \
-                                3166667 \
+                                task-manager \
                                 "$BASE_COMMIT" \
                                 "$HEAD_COMMIT" \
                                 dev \
@@ -124,7 +124,5 @@ pipeline {
                 }
             }
         }
-
-
     }
 }
