@@ -96,6 +96,28 @@ pipeline {
             }
         }
 
+        stage ("Aikido Security Scan") {
+            steps {
+                dir("frontend") {
+                    withCredentials([
+                        string(
+                            credentialsId: "AIKIDO_TOKEN",
+                            variable: "AIKIDO_TOKEN"
+                        )
+                    ]) {
+                        sh """
+                            aikido-api-client scan \
+                                --apikey "$AIKIDO_TOKEN" \
+                                3166667 \
+                                "$(git rev-list --max-parents=0 HEAD)" \
+                                "$(git rev-parse HEAD)" \
+                                dev \
+                                --minimum-severity-level HIGH
+                        """
+                    }
+                }
+            }
+        }
 
 
     }
