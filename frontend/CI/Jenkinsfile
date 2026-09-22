@@ -106,11 +106,17 @@ pipeline {
                         )
                     ]) {
                         sh '''
+                            BASE_COMMIT=$(git rev-parse HEAD~1)
+                            HEAD_COMMIT=$(git rev-parse HEAD)
+
+                            echo "Base commit: $BASE_COMMIT"
+                            echo "Head commit: $HEAD_COMMIT"
+
                             aikido-api-client scan \
                                 --apikey "$AIKIDO_TOKEN" \
                                 3166667 \
-                                "$(git rev-list --max-parents=0 HEAD)" \
-                                "$(git rev-parse HEAD)" \
+                                "$BASE_COMMIT" \
+                                "$HEAD_COMMIT" \
                                 dev \
                                 --minimum-severity-level HIGH
                         '''
