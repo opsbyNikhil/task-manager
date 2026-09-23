@@ -134,10 +134,33 @@ pipeline {
         //     }
         // }
 
-        stage ("Docker Build") {
-            when {
-                expression {false}
+        stage("Set Docker Image Tag") {
+            steps {
+                script {
+                    if (env.BUILD_IMAGE == "true") {
+                        env.task_manager_frontend = env.BUILD_NUMBER
+                    } else {
+                        env.task_manager_frontend = sh(
+                            script: '''
+                                docker images task-manager-frontend \
+                                --format "{{.Tag}}" |
+                                grep -E '^[0-9]+$' |
+                                sort -n |
+                                tail -1
+                            ''',
+                            returnStdout: true
+                        ).trim()
+                    }
+
+                    echo "Frontend image tag: ${env.task_manager_frontend}"
+                }
             }
+        }
+
+        stage ("Docker Build") {
+            // when {
+            //     expression {false}
+            // }
             steps {
                 dir("frontend") {
                     sh '''
@@ -151,10 +174,12 @@ pipeline {
             }
         }
 
+
+
         stage("Push Docker Image to ECR") {
-            when {
-                expression {false}
-            }
+            // when {
+            //     expression {false}
+            // }
             steps {
                 dir("frontend") {
                     withCredentials([
@@ -214,7 +239,8 @@ pipeline {
                         --format template \
                         --template "@junit.tpl" \
                         -o trivy-report.xml \
-                        task_manager_frontend:${BUILD_NUMBER}
+                        task-manager-frontend:${task_manager_frontend}
+
                 '''
             }
         }
