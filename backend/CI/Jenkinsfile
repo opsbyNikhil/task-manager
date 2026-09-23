@@ -250,4 +250,5 @@ pipeline {
             junit allowEmptyResults: true, testResults: 'trivy-report.xml'
         }
     }
+    
 }
