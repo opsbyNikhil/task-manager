@@ -16,9 +16,9 @@ pipeline {
         label "task-manager"
     }
     
-    triggers {
-        pollSCM ("* * * * *")
-    }
+    // triggers {
+    //     pollSCM ("* * * * *")
+    // }
 
     stages {
 
@@ -107,17 +107,64 @@ pipeline {
             }
         }
 
-        stage ("Docker Image") {
+        stage("Set Docker Version") {
+            when {
+                expression {false}
+            }
             steps {
-                dir ("backend") {
-                    sh '''docker compose build task-manager-backend'''
+                dir("backtend") {
+                    script {
+
+                        def currentVersion = sh(
+                            script: 'cat VERSION',
+                            returnStdout: true
+                        ).trim()
+
+                        def version = currentVersion.replace("v", "").split("\\.")
+
+                        def major = version[0].toInteger()
+                        def minor = version[1].toInteger()
+                        def patch = version[2].toInteger()
+
+                        patch++
+
+                        env.DOCKER_VERSION = "v${major}.${minor}.${patch}"
+
+                        sh """
+                            echo "${env.DOCKER_VERSION}" > VERSION
+                        """
+
+                        echo "Previous Version: ${currentVersion}"
+                        echo "New Docker Version: ${env.DOCKER_VERSION}"
+                    }
                 }
             }
         }
 
-        stage ("Push Docker Image to ECR") {
+        stage ("Docker Build") {
+            when {
+                expression {false}
+            }
             steps {
-                dir ("backend") {
+                dir("backend") {
+                    sh '''
+                        echo "Building backend Docker image: $DOCKER_VERSION"
+
+                        docker compose build task-manager-backend
+
+                        echo "Backend Docker image built successfully"
+                        echo "Image: task-manager-backend:$DOCKER_VERSION"
+                    '''
+                }
+            }
+        }
+
+        stage("Push Docker Image to ECR") {
+            when {
+                expression {false}
+            }
+            steps {
+                dir("Backend") {
                     withCredentials([
                         string(
                             credentialsId: "AWS_ACCESS_KEY_ID",
@@ -138,29 +185,67 @@ pipeline {
                         string(
                             credentialsId: "AWS_REPOSITORY",
                             variable: "AWS_REPOSITORY"
-                        ),
-                    ]){
-                        sh """
-                            echo "Logging in to Amazon ECR"
-                            aws ecr get-login-password \
-                                --region "$AWS_REGION" | \
-                            docker login \
-                                --username AWS \
-                                --password-stdin \
-                            "$AWS_ACCOUNT_ID".dkr.ecr."$AWS_REGION".amazonaws.com
+                        )
+                    ]) {
+                        sh '''
+                            echo "Logging into Amazon ECR"
 
-                            echo "Tagging Docker Image"
+                            ECR_REGISTRY="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+
+                            aws ecr get-login-password --region "$AWS_REGION" | \
+                            docker login --username AWS --password-stdin "$ECR_REGISTRY"
+
+                            echo "Tagging Backend Docker Image"
+
                             docker tag \
-                            task-manager-backend:$task_manager_backend \
-                            "$AWS_ACCOUNT_ID".dkr.ecr."$AWS_REGION".amazonaws.com/task-manager-backend:$task_manager_backend
+                                "task-manager-backend:$DOCKER_VERSION" \
+                                "$ECR_REGISTRY/$AWS_REPOSITORY:$DOCKER_VERSION"
 
-                            echo "Docker Push"
+                            echo "Pushing Backend Docker Image"
+
                             docker push \
-                            "$AWS_ACCOUNT_ID".dkr.ecr."$AWS_REGION".amazonaws.com/task-manager-backend:$task_manager_backend
-                        """ 
+                                "$ECR_REGISTRY/$AWS_REPOSITORY:$DOCKER_VERSION"
+
+                            echo "Backend Docker Image Successfully pushed to ECR"
+                        '''
                     }
                 }
             }
+        }
+
+        stage("Trivy Report") {
+            steps {
+                sh '''
+                    wget -q https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/junit.tpl \
+                        -O junit.tpl
+
+                    echo "===== TRIVY VULNERABILITY SCAN ====="
+
+                    trivy image \
+                        --scanners vuln \
+                        --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
+                        task-manager-backend:$DOCKER_VERSION
+
+                    echo "===== GENERATING JUNIT REPORT ====="
+
+                    trivy image \
+                        --scanners vuln \
+                        --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
+                        --format template \
+                        --template "@junit.tpl" \
+                        -o trivy-report.xml \
+                        task-manager-backend:$DOCKER_VERSION
+                '''
+            }
+        }
+
+        
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'trivy-report.xml', fingerprint: true
+            junit allowEmptyResults: true, testResults: 'trivy-report.xml'
         }
     }
 }
