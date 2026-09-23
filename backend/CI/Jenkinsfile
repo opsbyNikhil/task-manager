@@ -108,9 +108,9 @@ pipeline {
         }
 
         stage("Set Docker Version") {
-            when {
-                expression {false}
-            }
+            // when {
+            //     expression {false}
+            // }
             steps {
                 dir("backtend") {
                     script {
@@ -142,9 +142,9 @@ pipeline {
         }
 
         stage ("Docker Build") {
-            when {
-                expression {false}
-            }
+            // when {
+            //     expression {false}
+            // }
             steps {
                 dir("backend") {
                     sh '''
@@ -160,9 +160,9 @@ pipeline {
         }
 
         stage("Push Docker Image to ECR") {
-            when {
-                expression {false}
-            }
+            // when {
+            //     expression {false}
+            // }
             steps {
                 dir("Backend") {
                     withCredentials([
