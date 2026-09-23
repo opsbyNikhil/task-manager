@@ -13,9 +13,9 @@ pipeline {
         label "task-manager"
     }
 
-    triggers {
-        pollSCM("* * * * *")
-    }
+    // triggers {
+    //     pollSCM("* * * * *")
+    // }
 
     stages {
         stage ("Git Checkout") {
@@ -135,6 +135,9 @@ pipeline {
         // }
 
         stage("Set Docker Version") {
+            when {
+                expression {false}
+            }
             steps {
                 dir("frontend") {
                     script {
@@ -166,9 +169,9 @@ pipeline {
         }
 
         stage ("Docker Build") {
-            // when {
-            //     expression {false}
-            // }
+            when {
+                expression {false}
+            }
             steps {
                 dir("frontend") {
                     sh '''
@@ -184,9 +187,9 @@ pipeline {
         }
 
         stage("Push Docker Image to ECR") {
-            // when {
-            //     expression {false}
-            // }
+            when {
+                expression {false}
+            }
             steps {
                 dir("frontend") {
                     withCredentials([

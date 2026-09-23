@@ -1,7 +1,7 @@
 services:
 
   task-manager-backend:
-    image: task-manager-backend:${task_manager_backend}
+    image: task-manager-backend:${DOCKER_VERSION}
 
     build:
       context: ./backend/
