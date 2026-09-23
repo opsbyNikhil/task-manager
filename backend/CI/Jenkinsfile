@@ -16,9 +16,9 @@ pipeline {
         label "task-manager"
     }
     
-    triggers {
-        pollSCM ("* * * * *")
-    }
+    // triggers {
+    //     pollSCM ("* * * * *")
+    // }
 
     stages {
 
@@ -250,5 +250,5 @@ pipeline {
             junit allowEmptyResults: true, testResults: 'trivy-report.xml'
         }
     }
-    
+
 }
