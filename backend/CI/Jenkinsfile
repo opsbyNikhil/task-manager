@@ -108,18 +108,22 @@ pipeline {
         }
 
         stage("Set Docker Version") {
-            // when {
-            //     expression {false}
-            // }
             steps {
                 dir("backend") {
                     script {
 
+                        // Read current version
                         def currentVersion = sh(
                             script: 'cat VERSION',
                             returnStdout: true
                         ).trim()
 
+                        // Use current version for this Docker build
+                        env.DOCKER_VERSION = currentVersion
+
+                        echo "Docker Version: ${env.DOCKER_VERSION}"
+
+                        // Calculate next version
                         def version = currentVersion.replace("v", "").split("\\.")
 
                         def major = version[0].toInteger()
@@ -128,14 +132,14 @@ pipeline {
 
                         patch++
 
-                        env.DOCKER_VERSION = "v${major}.${minor}.${patch}"
+                        def nextVersion = "v${major}.${minor}.${patch}"
 
+                        // Save next version for the next build
                         sh """
-                            echo "${env.DOCKER_VERSION}" > VERSION
+                            echo "${nextVersion}" > VERSION
                         """
 
-                        echo "Previous Version: ${currentVersion}"
-                        echo "New Docker Version: ${env.DOCKER_VERSION}"
+                        echo "Next Version: ${nextVersion}"
                     }
                 }
             }
