@@ -134,25 +134,17 @@ pipeline {
         //     }
         // }
 
-        stage("Set Docker Image Tag") {
+        stage("Set Docker Version") {
             steps {
-                script {
-                    if (env.BUILD_IMAGE == "true") {
-                        env.task_manager_frontend = env.BUILD_NUMBER
-                    } else {
-                        env.task_manager_frontend = sh(
-                            script: '''
-                                docker images task-manager-frontend \
-                                --format "{{.Tag}}" |
-                                grep -E '^[0-9]+$' |
-                                sort -n |
-                                tail -1
-                            ''',
+                dir("frontend") {
+                    script {
+                        env.DOCKER_VERSION = sh(
+                            script: 'cat VERSION',
                             returnStdout: true
                         ).trim()
-                    }
 
-                    echo "Frontend image tag: ${env.task_manager_frontend}"
+                        echo "Docker Version: ${env.DOCKER_VERSION}"
+                    }
                 }
             }
         }
@@ -164,11 +156,14 @@ pipeline {
             steps {
                 dir("frontend") {
                     sh '''
-                        echo "Building frontend Docker image..."
+                        echo "Building frontend Docker image: $DOCKER_VERSION"
 
                         docker compose build task-manager-frontend
 
-                        echo "Frontend Docker image build successfully"
+                        docker tag \
+                            task-manager-frontend:$DOCKER_VERSION
+
+                        echo "Frontend Docker image built successfully"
                     '''
                 }
             }
@@ -215,13 +210,13 @@ pipeline {
                             echo "Tagging Frontend Docker Image"
 
                             docker tag \
-                                "task-manager-frontend:$task_manager_frontend" \
-                                "$ECR_REGISTRY/$AWS_REPOSITORY_FRONTEND:$task_manager_frontend"
+                                "task-manager-frontend:$DOCKER_VERSION" \
+                                "$ECR_REGISTRY/$AWS_REPOSITORY_FRONTEND:$DOCKER_VERSION"
 
                             echo "Pushing Frontend Docker Image"
 
                             docker push \
-                                "$ECR_REGISTRY/$AWS_REPOSITORY_FRONTEND:$task_manager_frontend"
+                                "$ECR_REGISTRY/$AWS_REPOSITORY_FRONTEND:$DOCKER_VERSION"
 
                             echo "Frontend Docker Image Successfully pushed to ECR"
                         '''
@@ -241,7 +236,7 @@ pipeline {
                     trivy image \
                         --scanners vuln \
                         --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
-                        task-manager-frontend:${task_manager_frontend}
+                        task-manager-frontend:$DOCKER_VERSION
 
                     echo "===== GENERATING JUNIT REPORT ====="
 
@@ -251,7 +246,7 @@ pipeline {
                         --format template \
                         --template "@junit.tpl" \
                         -o trivy-report.xml \
-                        task-manager-frontend:${task_manager_frontend}
+                        task-manager-frontend:$DOCKER_VERSION
                 '''
             }
         }
