@@ -160,16 +160,12 @@ pipeline {
 
                         docker compose build task-manager-frontend
 
-                        docker tag \
-                            task-manager-frontend:$DOCKER_VERSION
-
                         echo "Frontend Docker image built successfully"
+                        echo "Image: task-manager-frontend:$DOCKER_VERSION"
                     '''
                 }
             }
         }
-
-
 
         stage("Push Docker Image to ECR") {
             // when {
