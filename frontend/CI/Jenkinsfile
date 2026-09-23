@@ -214,7 +214,7 @@ pipeline {
                         --format template \
                         --template "@junit.tpl" \
                         -o trivy-report.xml \
-                        task_manager_frontend = ${BUILD_NUMBER}
+                        task_manager_frontend:${BUILD_NUMBER}
                 '''
             }
         }
