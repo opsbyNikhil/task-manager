@@ -138,12 +138,28 @@ pipeline {
             steps {
                 dir("frontend") {
                     script {
-                        env.DOCKER_VERSION = sh(
+
+                        def currentVersion = sh(
                             script: 'cat VERSION',
                             returnStdout: true
                         ).trim()
 
-                        echo "Docker Version: ${env.DOCKER_VERSION}"
+                        def version = currentVersion.replace("v", "").split("\\.")
+
+                        def major = version[0].toInteger()
+                        def minor = version[1].toInteger()
+                        def patch = version[2].toInteger()
+
+                        patch++
+
+                        env.DOCKER_VERSION = "v${major}.${minor}.${patch}"
+
+                        sh """
+                            echo "${env.DOCKER_VERSION}" > VERSION
+                        """
+
+                        echo "Previous Version: ${currentVersion}"
+                        echo "New Docker Version: ${env.DOCKER_VERSION}"
                     }
                 }
             }
