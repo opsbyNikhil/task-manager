@@ -112,7 +112,7 @@ pipeline {
             //     expression {false}
             // }
             steps {
-                dir("backtend") {
+                dir("backend") {
                     script {
 
                         def currentVersion = sh(
