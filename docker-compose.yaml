@@ -43,7 +43,7 @@ services:
     restart: always
 
   task-manager-frontend:
-    image: task-manager-frontend:${task_manager_frontend}
+    image: task-manager-frontend:${DOCKER_VERSION}
 
     build:
       context: ./frontend/
