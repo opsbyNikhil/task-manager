@@ -135,9 +135,9 @@ pipeline {
         // }
 
         stage("Set Docker Version") {
-            when {
-                expression {false}
-            }
+            // when {
+            //     expression {false}
+            // }
             steps {
                 dir("frontend") {
                     script {
@@ -147,6 +147,12 @@ pipeline {
                             returnStdout: true
                         ).trim()
 
+                        // Use current version for this Docker build
+                        env.DOCKER_VERSION = currentVersion
+
+                        echo "Docker Version: ${env.DOCKER_VERSION}"
+
+                        // Calculate next version
                         def version = currentVersion.replace("v", "").split("\\.")
 
                         def major = version[0].toInteger()
@@ -161,17 +167,17 @@ pipeline {
                             echo "${env.DOCKER_VERSION}" > VERSION
                         """
 
-                        echo "Previous Version: ${currentVersion}"
-                        echo "New Docker Version: ${env.DOCKER_VERSION}"
+                        echo "Next Version: ${nextVersion}"
+
                     }
                 }
             }
         }
 
         stage ("Docker Build") {
-            when {
-                expression {false}
-            }
+            // when {
+            //     expression {false}
+            // }
             steps {
                 dir("frontend") {
                     sh '''
@@ -187,9 +193,9 @@ pipeline {
         }
 
         stage("Push Docker Image to ECR") {
-            when {
-                expression {false}
-            }
+            // when {
+            //     expression {false}
+            // }
             steps {
                 dir("frontend") {
                     withCredentials([
