@@ -135,6 +135,9 @@ pipeline {
         // }
 
         stage ("Docker Build") {
+            when {
+                expression {false}
+            }
             steps {
                 dir("frontend") {
                     sh '''
@@ -149,6 +152,9 @@ pipeline {
         }
 
         stage("Push Docker Image to ECR") {
+            when {
+                expression {false}
+            }
             steps {
                 dir("frontend") {
                     withCredentials([
@@ -198,6 +204,28 @@ pipeline {
                 }
             }
         }
+
+        stage ("Trivy Report") {
+            steps {
+                sh '''
+                    trivy image \
+                        --scanners vuln \
+                        --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
+                        --format template \
+                        --template "@junit.tpl" \
+                        -o trivy-report.xml \
+                        task_manager_frontend = ${BUILD_NUMBER}
+                '''
+            }
+        }
+
         
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'trivy-report.xml', fingerprint: true
+            junit allowEmptyResults: true, testresults: 'trivy-report.xml'
+        }
     }
 }
