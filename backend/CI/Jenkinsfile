@@ -281,8 +281,8 @@ pipeline {
                         )
                     ]) {
                         sh '''
-                            git config user.name "Jenkins"
-                            git config user.email "jenkins@localhost"
+                            git config user.name "opsbyNikhil"
+                            git config user.email "https://github.com/opsbyNikhil/task-manager-backend-k8s.git"
 
                             git add backend/CD/deployment.yaml
 
