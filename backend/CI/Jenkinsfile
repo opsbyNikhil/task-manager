@@ -9,7 +9,7 @@ pipeline {
         AWS_REGION = credentials("AWS_REGION")
         AWS_REPOSITORY = credentials("AWS_REPOSITORY")
         task_manager_backend = "${BUILD_NUMBER}"
-
+        GITOPS_CREDENTIALS = "task-manager-backend-cd-github"
     }
     
     agent {
@@ -242,7 +242,21 @@ pipeline {
                 '''
             }
         }
+
+        stage("Checkout GitOps Repository") {
+            steps {
+                dir("backend-cd") {
+                    git(
+                        url: "https://github.com/opsbyNikhil/task-manager-backend-cd.git",
+                        branch: "dev",
+                        credentialsId: "task-manager-backend-cd-github"
+                    )
+                }
+            }
+        }
     }
+
+    
 
     post {
         always {
@@ -250,4 +264,6 @@ pipeline {
             junit allowEmptyResults: true, testResults: 'trivy-report.xml'
         }
     }
+
+
 }
