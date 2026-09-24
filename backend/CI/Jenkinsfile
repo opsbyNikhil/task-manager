@@ -257,7 +257,7 @@ pipeline {
 
         stage("Update Kubernetes Image") {
             steps {
-                dir("backend/cd") {
+                dir("backend-cd") {
                     sh '''
                         echo "Updating Kubernetes image to: $DOCKER_VERSION"
 
