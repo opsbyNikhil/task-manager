@@ -285,15 +285,22 @@ pipeline {
                             git config user.email "https://github.com/opsbyNikhil/task-manager-backend-k8s.git"
 
                             git add backend/CD/deployment.yaml
+                            git add backend/CD/configmap.yaml
 
-                            if git diff --cached --quiet; then
-                                echo "No changes to commit"
-                                exit 0
+                            if ! git diff --cached --quiet; then
+                                echo "Changes detected. Creating commit..."
+                                git commit -m "Update backend deployment"
+                            else
+                                echo "No new file changes to commit"
                             fi
 
-                            git commit -m "Update backend image to $DOCKER_VERSION"
+                            echo "Pushing GitOps changes..."
 
-                            git push https://$GIT_USERNAME:$GIT_PASSWORD@github.com/opsbyNikhil/task-manager-backend-k8s.git HEAD:dev
+                            git remote set-url origin "https://$GIT_USERNAME:$GIT_PASSWORD@github.com/opsbyNikhil/task-manager-backend-k8s.git"
+
+                            git push origin dev
+
+                            echo "GitOps changes pushed successfully
                         '''
                     }
                 }
