@@ -148,14 +148,40 @@ pipeline {
         stage("Commit Next Version") {
             steps {
                 dir("backend") {
-                    sh '''
-                        git config user.name "opsbyNikhil"
-                        git config user.email "purposejob97@gmail.com"
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'task-manager-github',
+                            usernameVariable: 'GIT_USERNAME',
+                            passwordVariable: 'GIT_PASSWORD'
+                        )
+                    ]) {
+                        sh '''
+                            set +x
 
-                        git add VERSION
-                        git commit -m "Bump backend version to $(cat VERSION)" || echo "No version change"
-                        git push origin dev
-                    '''
+                            git config user.name "opsbyNikhil"
+                            git config user.email "purposejob97@gmail.com"
+
+                            git add VERSION
+                            git commit -m "Bump backend version to $(cat VERSION)" || echo "No version change"
+
+                            export GIT_ASKPASS="$WORKSPACE/git-askpass.sh"
+
+                            cat > "$GIT_ASKPASS" <<'EOF'
+                            
+                                #!/bin/sh
+                                case "$1" in
+                                    *Username*) echo "$GIT_USERNAME" ;;
+                                    *Password*) echo "$GIT_PASSWORD" ;;
+                                esac
+                                EOF
+
+                            chmod 700 "$GIT_ASKPASS"
+
+                            git push origin HEAD:dev
+
+                            rm -f "$GIT_ASKPASS"
+                        '''
+                    }
                 }
             }
         }
