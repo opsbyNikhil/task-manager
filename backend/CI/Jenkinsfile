@@ -254,6 +254,23 @@ pipeline {
                 }
             }
         }
+
+        stage("Update Kubernetes Image") {
+            steps {
+                dir("backend/cd") {
+                    sh '''
+                        echo "Updating Kubernetes image to: $DOCKER_VERSION"
+
+                        sed -i "s|image: .*|image: 984912521466.dkr.ecr.ap-southeast-1.amazonaws.com/task-manager-backend:$DOCKER_VERSION|" backend/CD/deployment.yaml
+
+                        echo "Updated image:"
+                        grep -n "image:" backend/CD/deployment.yaml
+                    '''
+                }
+            }
+}
+
+
     }
 
     
