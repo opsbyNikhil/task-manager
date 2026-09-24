@@ -145,6 +145,21 @@ pipeline {
             }
         }
 
+        stage("Commit Next Version") {
+            steps {
+                dir("backend") {
+                    sh '''
+                        git config user.name "opsbyNikhil"
+                        git config user.email "purposejob97@gmail.com"
+
+                        git add VERSION
+                        git commit -m "Bump backend version to $(cat VERSION)" || echo "No version change"
+                        git push origin dev
+                    '''
+                }
+            }
+        }
+
         stage ("Docker Build") {
             // when {
             //     expression {false}
