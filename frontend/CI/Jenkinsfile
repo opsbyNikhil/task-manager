@@ -6,6 +6,8 @@ pipeline {
         AWS_REGION = credentials("AWS_REGION")
         AWS_REPOSITORY_FRONTEND = credentials("AWS_REPOSITORY_FRONTEND")
         task_manager_frontend = "${BUILD_NUMBER}"
+        FRONTEND_GITOPS = credentials("task-manager-frontend-cd-github")
+
     }
 
     
@@ -270,13 +272,85 @@ pipeline {
             }
         }
 
+        stage("Checkout GitOps Repository") {
+            steps {
+                dir("frontend-cd") {
+                    git(
+                        url: "https://github.com/opsbyNikhil/task-manager-frontend-k8s.git",
+                        branch: "dev",
+                        credentialsId: "task-manager-frontend-cd-github"
+                    )
+                }
+            }
+        }
+
+        stage("Update Kubernetes Image") {
+            steps {
+                dir("frontend-cd") {
+                    sh '''
+                        echo "Updating Kubernetes image to: $DOCKER_VERSION"
+
+                        sed -i "s|image: .*|image: 984912521466.dkr.ecr.ap-southeast-1.amazonaws.com/task-manager-frontend:$DOCKER_VERSION|" frontend/CD/deployment.yaml
+
+                        echo "Updated image:"
+                        grep -n "image:" frontend/CD/deployment.yaml
+                    '''
+                }
+            }
+        }
+
+        stage("Commit and Push GitOps Changes") {
+            steps {
+                dir("frontend-cd") {
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: "task-manager-frontend-cd-github",
+                            usernameVariable: "GIT_USERNAME",
+                            passwordVariable: "GIT_PASSWORD"
+                        )
+                    ]) {
+                        sh '''
+                            set -e
+
+                            git config user.name "opsbyNikhil"
+                            git config user.email "purposejob97@gmail.com"
+
+                            git add frontend/CD/deployment.yaml
+                            git add frontend/CD/configmap.yaml
+
+                            if ! git diff --cached --quiet; then
+                                echo "Changes detected. Creating commit..."
+                                git commit -m "Update frontend deployment"
+                            else
+                                echo "No new file changes to commit"
+                            fi
+
+                            echo "Pushing GitOps changes..."
+
+                            git -c credential.helper= push \
+                                "https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/opsbyNikhil/task-manager-frontend-k8s.git" \
+                                HEAD:dev
+
+                            echo "Frontend GitOps changes pushed successfully"
+                        '''
+                    }
+                }
+            }
+        }
         
     }
 
     post {
         always {
-            archiveArtifacts artifacts: 'trivy-report.xml', fingerprint: true
-            junit allowEmptyResults: true, testResults: 'trivy-report.xml'
+            archiveArtifacts(
+                artifacts: 'frontend/trivy-report.xml', 
+                fingerprint: true
+            )
+
+            junit( 
+                allowEmptyResults: true, 
+                testResults: 'frontend/trivy-report.xml'
+            )
         }
     }
 }
