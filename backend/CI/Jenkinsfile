@@ -284,7 +284,7 @@ pipeline {
                             set -e
 
                             git config user.name "opsbyNikhil"
-                            git config user.email "opsbynikhil@users.noreply.github.com"
+                            git config user.email "purposejob97@gmail.com"
 
                             git add backend/CD/deployment.yaml
                             git add backend/CD/configmap.yaml
