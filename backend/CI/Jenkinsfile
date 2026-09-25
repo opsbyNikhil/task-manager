@@ -298,7 +298,9 @@ pipeline {
 
                             echo "Pushing GitOps changes..."
 
-                            git push origin dev
+                            git -c credential.helper= push \
+                                "https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/opsbyNikhil/task-manager-backend-k8s.git" \
+                                HEAD:dev
 
                             echo "GitOps changes pushed successfully"
                         '''
