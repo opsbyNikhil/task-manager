@@ -6,7 +6,7 @@ pipeline {
         AWS_REGION = credentials("AWS_REGION")
         AWS_REPOSITORY_FRONTEND = credentials("AWS_REPOSITORY_FRONTEND")
         task_manager_frontend = "${BUILD_NUMBER}"
-        FRONTEND_GITOPS = credentials("task-manager-frontend-cd-github")
+        FRONTEND_GITOPS = "task-manager-frontend-cd-github"
 
     }
 
