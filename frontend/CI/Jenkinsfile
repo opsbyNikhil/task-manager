@@ -245,27 +245,29 @@ pipeline {
 
         stage("Trivy Report") {
             steps {
-                sh '''
-                    wget -q https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/junit.tpl \
-                        -O junit.tpl
+                dir("frontend") {
+                    sh '''
+                        wget -q https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/junit.tpl \
+                            -O junit.tpl
 
-                    echo "===== TRIVY VULNERABILITY SCAN ====="
+                        echo "===== TRIVY VULNERABILITY SCAN ====="
 
-                    trivy image \
-                        --scanners vuln \
-                        --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
-                        task-manager-frontend:$DOCKER_VERSION
+                        trivy image \
+                            --scanners vuln \
+                            --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
+                            task-manager-frontend:$DOCKER_VERSION
 
-                    echo "===== GENERATING JUNIT REPORT ====="
+                        echo "===== GENERATING JUNIT REPORT ====="
 
-                    trivy image \
-                        --scanners vuln \
-                        --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
-                        --format template \
-                        --template "@junit.tpl" \
-                        -o trivy-report.xml \
-                        task-manager-frontend:$DOCKER_VERSION
-                '''
+                        trivy image \
+                            --scanners vuln \
+                            --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
+                            --format template \
+                            --template "@junit.tpl" \
+                            -o trivy-report.xml \
+                            task-manager-frontend:$DOCKER_VERSION
+                    '''
+                }    
             }
         }
 
