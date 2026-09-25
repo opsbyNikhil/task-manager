@@ -281,8 +281,10 @@ pipeline {
                         )
                     ]) {
                         sh '''
+                            set -e
+
                             git config user.name "opsbyNikhil"
-                            git config user.email "https://github.com/opsbyNikhil/task-manager-backend-k8s.git"
+                            git config user.email "opsbynikhil@users.noreply.github.com"
 
                             git add backend/CD/deployment.yaml
                             git add backend/CD/configmap.yaml
@@ -295,8 +297,6 @@ pipeline {
                             fi
 
                             echo "Pushing GitOps changes..."
-
-                            git remote set-url origin "https://$GIT_USERNAME:$GIT_PASSWORD@github.com/opsbyNikhil/task-manager-backend-k8s.git"
 
                             git push origin dev
 
