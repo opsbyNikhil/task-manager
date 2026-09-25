@@ -5,8 +5,6 @@ pipeline {
         AWS_ACCOUNT_ID = credentials("AWS_ACCOUNT_ID")
         AWS_REGION = credentials("AWS_REGION")
         AWS_REPOSITORY_FRONTEND = credentials("AWS_REPOSITORY_FRONTEND")
-        task_manager_frontend = "${BUILD_NUMBER}"
-
     }
 
     
@@ -315,7 +313,6 @@ pipeline {
                             git config user.email "purposejob97@gmail.com"
 
                             git add frontend/CD/deployment.yaml
-                            git add frontend/CD/configmap.yaml
 
                             if ! git diff --cached --quiet; then
                                 echo "Changes detected. Creating commit..."
