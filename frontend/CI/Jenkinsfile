@@ -289,7 +289,7 @@ pipeline {
                     sh '''
                         echo "Updating Kubernetes image to: $DOCKER_VERSION"
 
-                        sed -i "s|image: .*|image: 984912521466.dkr.ecr.ap-southeast-1.amazonaws.com/task-manager-frontend:$DOCKER_VERSION|" frontend/CD/deployment.yaml
+                        sed -i "s|image: .*|image: 984912521466.dkr.ecr.ap-southeast-1.amazonaws.com/task_manager_frontend:$DOCKER_VERSION|" frontend/CD/deployment.yaml
 
                         echo "Updated image:"
                         grep -n "image:" frontend/CD/deployment.yaml
