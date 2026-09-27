@@ -1,13 +1,364 @@
-pipeline {
-    environment {
-        AWS_ACCESS_KEY_ID = credentials("AWS_ACCESS_KEY_ID")
-        AWS_SECRET_ACCESS_KEY = credentials("AWS_SECRET_ACCESS_KEY")
-        AWS_ACCOUNT_ID = credentials("AWS_ACCOUNT_ID")
-        AWS_REGION = credentials("AWS_REGION")
-        AWS_REPOSITORY_FRONTEND = credentials("AWS_REPOSITORY_FRONTEND")
-    }
+// pipeline {
+//     environment {
+//         AWS_ACCESS_KEY_ID = credentials("AWS_ACCESS_KEY_ID")
+//         AWS_SECRET_ACCESS_KEY = credentials("AWS_SECRET_ACCESS_KEY")
+//         AWS_ACCOUNT_ID = credentials("AWS_ACCOUNT_ID")
+//         AWS_REGION = credentials("AWS_REGION")
+//         AWS_REPOSITORY_FRONTEND = credentials("AWS_REPOSITORY_FRONTEND")
+//     }
 
     
+//     agent {
+//         label "task-manager"
+//     }
+
+//     triggers {
+//         pollSCM("* * * * *")
+//     }
+
+//     stages {
+//         stage ("Git Checkout") {
+//             steps {
+//                 git url: "https://github.com/opsbyNikhil/task-manager.git",
+//                     branch: "dev"
+//             }
+//         }
+
+//         stage ("Install Dependencies") {
+//             steps {
+//                 dir ("frontend") {
+//                     sh """
+//                         npm install
+//                     """
+//                 }
+//             }
+//         }
+
+//         stage ("Build Frontend") {
+//             steps {
+//                 dir ("frontend") {
+//                     sh """
+//                         npm run build
+//                     """
+//                 }
+//             }
+//         }
+
+//         stage ("Deploy Frontend to S3") {
+//             steps {
+//                 dir ("frontend") {
+//                     withCredentials([
+//                         string(
+//                             credentialsId: "AWS_ACCESS_KEY_ID",
+//                             variable: "AWS_ACCESS_KEY_ID"
+//                         ),
+//                         string(
+//                             credentialsId: "AWS_SECRET_ACCESS_KEY",
+//                             variable: "AWS_SECRET_ACCESS_KEY"
+//                         ),
+//                         string(
+//                             credentialsId: "AWS_REGION",
+//                             variable: "AWS_REGION"
+//                         ),
+//                         string(
+//                             credentialsId: "AWS_S3_BUCKET",
+//                             variable: "AWS_S3_BUCKET"
+//                         ),
+//                     ]) {
+//                         sh """
+//                             echo "uploading frontend build-${BUILD_NUMBER} to s3"
+//                             aws s3 sync dist/ \
+//                                 s3://\$AWS_S3_BUCKET/build-${BUILD_NUMBER}/ \
+//                                 --delete \
+//                                 --region "\$AWS_REGION"
+
+//                             echo "Frontend deployment completed"
+//                         """
+//                     }
+//                 }
+//             }
+//         }
+
+//         stage ("Sonarqube-Scan") {
+//             steps {
+//                 dir("frontend") {
+//                     withCredentials([
+//                         string(
+//                             credentialsId: "SONAR_ID",
+//                             variable: "SONAR_TOKEN"
+//                     )]){
+//                         script {
+//                             def scannerhome = tool "SONAR_ID"
+//                             withSonarQubeEnv("SONAR_ID") {
+//                                 sh """
+//                                     ${scannerhome}/bin/sonar-scanner \
+//                                         -Dsonar.projectKey=opsbyNikhil_task-manager \
+//                                         -Dsonar.organization=opsbynikhil \
+//                                         -Dsonar.host.url=https://sonarcloud.io \
+//                                         -Dsonar.login=$SONAR_TOKEN
+//                                 """
+//                         }
+//                     }     
+//                     }
+//                 }
+//             }
+//         }
+
+//         // stage ("Aikido Security Scan") {
+//         //     steps {
+//         //         dir("frontend") {
+//         //             withCredentials([
+//         //                 string(
+//         //                     credentialsId: "AIKIDO_TOKEN",
+//         //                     variable: "AIKIDO_TOKEN"
+//         //                 )
+//         //             ]) {
+//         //                 sh '''
+//         //                     BASE_COMMIT=$(git rev-parse HEAD~1)
+//         //                     HEAD_COMMIT=$(git rev-parse HEAD)
+
+//         //                     echo "Base commit: $BASE_COMMIT"
+//         //                     echo "Head commit: $HEAD_COMMIT"
+
+//         //                     aikido-api-client scan \
+//         //                         --apikey "$AIKIDO_TOKEN" \
+//         //                         task-manager \
+//         //                         "$BASE_COMMIT" \
+//         //                         "$HEAD_COMMIT" \
+//         //                         dev \
+//         //                         --minimum-severity-level HIGH
+//         //                 '''
+//         //             }
+//         //         }
+//         //     }
+//         // }
+
+//         stage("Set Docker Version") {
+//             steps {
+//                 dir("frontend") {
+//                     script {
+
+//                         // Read current version
+//                         def currentVersion = sh(
+//                             script: 'cat VERSION',
+//                             returnStdout: true
+//                         ).trim()
+
+//                         // Use current version for this Docker build
+//                         env.DOCKER_VERSION = currentVersion
+
+//                         echo "Docker Version: ${env.DOCKER_VERSION}"
+
+//                         // Calculate next version
+//                         def version = currentVersion.replace("v", "").split("\\.")
+
+//                         def major = version[0].toInteger()
+//                         def minor = version[1].toInteger()
+//                         def patch = version[2].toInteger()
+
+//                         patch++
+
+//                         def nextVersion = "v${major}.${minor}.${patch}"
+
+//                         // Save next version for the next build
+//                         sh """
+//                             echo "${nextVersion}" > VERSION
+//                         """
+
+//                         echo "Next Version: ${nextVersion}"
+//                     }
+//                 }
+//             }
+//         }
+
+//         stage ("Docker Build") {
+//             // when {
+//             //     expression {false}
+//             // }
+//             steps {
+//                 dir("frontend") {
+//                     sh '''
+//                         echo "Building frontend Docker image: $DOCKER_VERSION"
+
+//                         docker compose build task-manager-frontend
+
+//                         echo "Frontend Docker image built successfully"
+//                         echo "Image: task-manager-frontend:$DOCKER_VERSION"
+//                     '''
+//                 }
+//             }
+//         }
+
+//         stage("Push Docker Image to ECR") {
+//             // when {
+//             //     expression {false}
+//             // }
+//             steps {
+//                 dir("frontend") {
+//                     withCredentials([
+//                         string(
+//                             credentialsId: "AWS_ACCESS_KEY_ID",
+//                             variable: "AWS_ACCESS_KEY_ID"
+//                         ),
+//                         string(
+//                             credentialsId: "AWS_SECRET_ACCESS_KEY",
+//                             variable: "AWS_SECRET_ACCESS_KEY"
+//                         ),
+//                         string(
+//                             credentialsId: "AWS_ACCOUNT_ID",
+//                             variable: "AWS_ACCOUNT_ID"
+//                         ),
+//                         string(
+//                             credentialsId: "AWS_REGION",
+//                             variable: "AWS_REGION"
+//                         ),
+//                         string(
+//                             credentialsId: "AWS_REPOSITORY_FRONTEND",
+//                             variable: "AWS_REPOSITORY_FRONTEND"
+//                         )
+//                     ]) {
+//                         sh '''
+//                             echo "Logging into Amazon ECR"
+
+//                             ECR_REGISTRY="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+
+//                             aws ecr get-login-password --region "$AWS_REGION" | \
+//                             docker login --username AWS --password-stdin "$ECR_REGISTRY"
+
+//                             echo "Tagging Frontend Docker Image"
+
+//                             docker tag \
+//                                 "task-manager-frontend:$DOCKER_VERSION" \
+//                                 "$ECR_REGISTRY/$AWS_REPOSITORY_FRONTEND:$DOCKER_VERSION"
+
+//                             echo "Pushing Frontend Docker Image"
+
+//                             docker push \
+//                                 "$ECR_REGISTRY/$AWS_REPOSITORY_FRONTEND:$DOCKER_VERSION"
+
+//                             echo "Frontend Docker Image Successfully pushed to ECR"
+//                         '''
+//                     }
+//                 }
+//             }
+//         }
+
+//         stage("Trivy Report") {
+//             steps {
+//                 dir("frontend") {
+//                     sh '''
+//                         wget -q https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/junit.tpl \
+//                             -O junit.tpl
+
+//                         echo "===== TRIVY VULNERABILITY SCAN ====="
+
+//                         trivy image \
+//                             --scanners vuln \
+//                             --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
+//                             task-manager-frontend:$DOCKER_VERSION
+
+//                         echo "===== GENERATING JUNIT REPORT ====="
+
+//                         trivy image \
+//                             --scanners vuln \
+//                             --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
+//                             --format template \
+//                             --template "@junit.tpl" \
+//                             -o trivy-report.xml \
+//                             task-manager-frontend:$DOCKER_VERSION
+//                     '''
+//                 }    
+//             }
+//         }
+
+//         stage("Checkout GitOps Repository") {
+//             steps {
+//                 dir("frontend-cd") {
+//                     git(
+//                         url: "https://github.com/opsbyNikhil/task-manager-frontend-k8s.git",
+//                         branch: "dev",
+//                         credentialsId: "task-manager-frontend-cd-github"
+//                     )
+//                 }
+//             }
+//         }
+
+//         stage("Update Kubernetes Image") {
+//             steps {
+//                 dir("frontend-cd") {
+//                     sh '''
+//                         echo "Updating Kubernetes image to: $DOCKER_VERSION"
+
+//                         sed -i "s|image: .*|image: 984912521466.dkr.ecr.ap-southeast-1.amazonaws.com/task_manager_frontend:$DOCKER_VERSION|" frontend/CD/deployment.yaml
+
+//                         echo "Updated image:"
+//                         grep -n "image:" frontend/CD/deployment.yaml
+//                     '''
+//                 }
+//             }
+//         }
+
+//         stage("Commit and Push GitOps Changes") {
+//             steps {
+//                 dir("frontend-cd") {
+//                     withCredentials([
+//                         usernamePassword(
+//                             credentialsId: "task-manager-frontend-cd-github",
+//                             usernameVariable: "GIT_USERNAME",
+//                             passwordVariable: "GIT_PASSWORD"
+//                         )
+//                     ]) {
+//                         sh '''
+//                             set -e
+
+//                             git config user.name "opsbyNikhil"
+//                             git config user.email "purposejob97@gmail.com"
+
+//                             git add frontend/CD/deployment.yaml
+
+//                             if ! git diff --cached --quiet; then
+//                                 echo "Changes detected. Creating commit..."
+//                                 git commit -m "Update frontend deployment"
+//                             else
+//                                 echo "No new file changes to commit"
+//                             fi
+
+//                             echo "Pushing GitOps changes..."
+
+//                             git -c credential.helper= push \
+//                                 "https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/opsbyNikhil/task-manager-frontend-k8s.git" \
+//                                 HEAD:dev
+
+//                             echo "Frontend GitOps changes pushed successfully"
+//                         '''
+//                     }
+//                 }
+//             }
+//         }
+        
+//     }
+
+//     post {
+//         always {
+//             archiveArtifacts(
+//                 artifacts: 'frontend/trivy-report.xml', 
+//                 fingerprint: true
+//             )
+
+//             junit( 
+//                 allowEmptyResults: true, 
+//                 testResults: 'frontend/trivy-report.xml'
+//             )
+//         }
+//     }
+    
+// }
+
+
+
+
+pipeline {
+
     agent {
         label "task-manager"
     }
@@ -17,16 +368,19 @@ pipeline {
     }
 
     stages {
-        stage ("Git Checkout") {
+
+        stage("Git Checkout") {
             steps {
-                git url: "https://github.com/opsbyNikhil/task-manager.git",
+                git(
+                    url: "https://github.com/opsbyNikhil/task-manager.git",
                     branch: "dev"
+                )
             }
         }
 
-        stage ("Install Dependencies") {
+        stage("Install Dependencies") {
             steps {
-                dir ("frontend") {
+                dir("frontend") {
                     sh """
                         npm install
                     """
@@ -34,9 +388,9 @@ pipeline {
             }
         }
 
-        stage ("Build Frontend") {
+        stage("Build Frontend") {
             steps {
-                dir ("frontend") {
+                dir("frontend") {
                     sh """
                         npm run build
                     """
@@ -44,113 +398,50 @@ pipeline {
             }
         }
 
-        stage ("Deploy Frontend to S3") {
-            steps {
-                dir ("frontend") {
-                    withCredentials([
-                        string(
-                            credentialsId: "AWS_ACCESS_KEY_ID",
-                            variable: "AWS_ACCESS_KEY_ID"
-                        ),
-                        string(
-                            credentialsId: "AWS_SECRET_ACCESS_KEY",
-                            variable: "AWS_SECRET_ACCESS_KEY"
-                        ),
-                        string(
-                            credentialsId: "AWS_REGION",
-                            variable: "AWS_REGION"
-                        ),
-                        string(
-                            credentialsId: "AWS_S3_BUCKET",
-                            variable: "AWS_S3_BUCKET"
-                        ),
-                    ]) {
-                        sh """
-                            echo "uploading frontend build-${BUILD_NUMBER} to s3"
-                            aws s3 sync dist/ \
-                                s3://\$AWS_S3_BUCKET/build-${BUILD_NUMBER}/ \
-                                --delete \
-                                --region "\$AWS_REGION"
-
-                            echo "Frontend deployment completed"
-                        """
-                    }
-                }
-            }
-        }
-
-        stage ("Sonarqube-Scan") {
+        stage("SonarQube Scan") {
             steps {
                 dir("frontend") {
                     withCredentials([
                         string(
                             credentialsId: "SONAR_ID",
                             variable: "SONAR_TOKEN"
-                    )]){
+                        )
+                    ]) {
                         script {
-                            def scannerhome = tool "SONAR_ID"
+                            def scannerHome = tool "SONAR_ID"
+
                             withSonarQubeEnv("SONAR_ID") {
                                 sh """
-                                    ${scannerhome}/bin/sonar-scanner \
+                                    ${scannerHome}/bin/sonar-scanner \
                                         -Dsonar.projectKey=opsbyNikhil_task-manager \
                                         -Dsonar.organization=opsbynikhil \
                                         -Dsonar.host.url=https://sonarcloud.io \
                                         -Dsonar.login=$SONAR_TOKEN
                                 """
+                            }
                         }
-                    }     
                     }
                 }
             }
         }
-
-        // stage ("Aikido Security Scan") {
-        //     steps {
-        //         dir("frontend") {
-        //             withCredentials([
-        //                 string(
-        //                     credentialsId: "AIKIDO_TOKEN",
-        //                     variable: "AIKIDO_TOKEN"
-        //                 )
-        //             ]) {
-        //                 sh '''
-        //                     BASE_COMMIT=$(git rev-parse HEAD~1)
-        //                     HEAD_COMMIT=$(git rev-parse HEAD)
-
-        //                     echo "Base commit: $BASE_COMMIT"
-        //                     echo "Head commit: $HEAD_COMMIT"
-
-        //                     aikido-api-client scan \
-        //                         --apikey "$AIKIDO_TOKEN" \
-        //                         task-manager \
-        //                         "$BASE_COMMIT" \
-        //                         "$HEAD_COMMIT" \
-        //                         dev \
-        //                         --minimum-severity-level HIGH
-        //                 '''
-        //             }
-        //         }
-        //     }
-        // }
 
         stage("Set Docker Version") {
             steps {
                 dir("frontend") {
                     script {
 
-                        // Read current version
                         def currentVersion = sh(
-                            script: 'cat VERSION',
+                            script: "cat VERSION",
                             returnStdout: true
                         ).trim()
 
-                        // Use current version for this Docker build
                         env.DOCKER_VERSION = currentVersion
 
                         echo "Docker Version: ${env.DOCKER_VERSION}"
 
-                        // Calculate next version
-                        def version = currentVersion.replace("v", "").split("\\.")
+                        def version = currentVersion
+                            .replace("v", "")
+                            .split("\\.")
 
                         def major = version[0].toInteger()
                         def minor = version[1].toInteger()
@@ -160,7 +451,6 @@ pipeline {
 
                         def nextVersion = "v${major}.${minor}.${patch}"
 
-                        // Save next version for the next build
                         sh """
                             echo "${nextVersion}" > VERSION
                         """
@@ -171,10 +461,7 @@ pipeline {
             }
         }
 
-        stage ("Docker Build") {
-            // when {
-            //     expression {false}
-            // }
+        stage("Docker Build") {
             steps {
                 dir("frontend") {
                     sh '''
@@ -190,9 +477,6 @@ pipeline {
         }
 
         stage("Push Docker Image to ECR") {
-            // when {
-            //     expression {false}
-            // }
             steps {
                 dir("frontend") {
                     withCredentials([
@@ -217,13 +501,19 @@ pipeline {
                             variable: "AWS_REPOSITORY_FRONTEND"
                         )
                     ]) {
+
                         sh '''
+                            set -e
+
                             echo "Logging into Amazon ECR"
 
                             ECR_REGISTRY="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
 
-                            aws ecr get-login-password --region "$AWS_REGION" | \
-                            docker login --username AWS --password-stdin "$ECR_REGISTRY"
+                            aws ecr get-login-password \
+                                --region "$AWS_REGION" | \
+                                docker login \
+                                --username AWS \
+                                --password-stdin "$ECR_REGISTRY"
 
                             echo "Tagging Frontend Docker Image"
 
@@ -247,7 +537,10 @@ pipeline {
             steps {
                 dir("frontend") {
                     sh '''
-                        wget -q https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/junit.tpl \
+                        set -e
+
+                        wget -q \
+                            https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/junit.tpl \
                             -O junit.tpl
 
                         echo "===== TRIVY VULNERABILITY SCAN ====="
@@ -255,7 +548,7 @@ pipeline {
                         trivy image \
                             --scanners vuln \
                             --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
-                            task-manager-frontend:$DOCKER_VERSION
+                            "task-manager-frontend:$DOCKER_VERSION"
 
                         echo "===== GENERATING JUNIT REPORT ====="
 
@@ -265,9 +558,9 @@ pipeline {
                             --format template \
                             --template "@junit.tpl" \
                             -o trivy-report.xml \
-                            task-manager-frontend:$DOCKER_VERSION
+                            "task-manager-frontend:$DOCKER_VERSION"
                     '''
-                }    
+                }
             }
         }
 
@@ -287,11 +580,15 @@ pipeline {
             steps {
                 dir("frontend-cd") {
                     sh '''
+                        set -e
+
                         echo "Updating Kubernetes image to: $DOCKER_VERSION"
 
-                        sed -i "s|image: .*|image: 984912521466.dkr.ecr.ap-southeast-1.amazonaws.com/task_manager_frontend:$DOCKER_VERSION|" frontend/CD/deployment.yaml
+                        sed -i "s|image: .*|image: 984912521466.dkr.ecr.ap-southeast-1.amazonaws.com/task_manager_frontend:$DOCKER_VERSION|" \
+                            frontend/CD/deployment.yaml
 
                         echo "Updated image:"
+
                         grep -n "image:" frontend/CD/deployment.yaml
                     '''
                 }
@@ -308,6 +605,7 @@ pipeline {
                             passwordVariable: "GIT_PASSWORD"
                         )
                     ]) {
+
                         sh '''
                             set -e
 
@@ -317,10 +615,15 @@ pipeline {
                             git add frontend/CD/deployment.yaml
 
                             if ! git diff --cached --quiet; then
+
                                 echo "Changes detected. Creating commit..."
+
                                 git commit -m "Update frontend deployment"
+
                             else
+
                                 echo "No new file changes to commit"
+
                             fi
 
                             echo "Pushing GitOps changes..."
@@ -335,21 +638,23 @@ pipeline {
                 }
             }
         }
-        
     }
 
     post {
+
         always {
+
             archiveArtifacts(
-                artifacts: 'frontend/trivy-report.xml', 
-                fingerprint: true
+                artifacts: "frontend/trivy-report.xml",
+                fingerprint: true,
+                allowEmptyArchive: true
             )
 
-            junit( 
-                allowEmptyResults: true, 
-                testResults: 'frontend/trivy-report.xml'
+            junit(
+                allowEmptyResults: true,
+                testResults: "frontend/trivy-report.xml"
             )
         }
     }
-    
 }
+
