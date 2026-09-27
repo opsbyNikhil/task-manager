@@ -16,9 +16,9 @@ pipeline {
         label "task-manager"
     }
     
-    // triggers {
-    //     pollSCM ("* * * * *")
-    // }
+    triggers {
+        pollSCM ("* * * * *")
+    }
 
     stages {
 
